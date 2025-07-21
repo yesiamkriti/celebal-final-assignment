@@ -1,0 +1,61 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+
+# Compiled files
+target/
+bin/
+
+# IDEs
+*.iml
+.idea/
+*.ipr
+*.iws
+.vscode/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven
+.mvn/
+!**/src/main/**/mvnw
+!**/src/main/**/mvnw.cmd
+
+# Gradle (if used)
+.gradle/
+build/
+!gradle-wrapper.jar
+gradle-app.setting
+
+# Docker
+*.env
+docker-compose.override.yml
+docker-compose.yml
+Dockerfile
+
+# Node modules (if frontend included)
+node_modules/
+
+# IntelliJ files
+out/
+*.out
+
+# Environment files
+.env
+.env.*
+
+# Coverage reports
+coverage/
+jacoco.exec
+
+# Misc
+*.tmp
+*.bak
+*.swp
