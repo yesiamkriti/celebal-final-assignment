@@ -34,11 +34,6 @@ build/
 !gradle-wrapper.jar
 gradle-app.setting
 
-# Docker
-*.env
-docker-compose.override.yml
-docker-compose.yml
-Dockerfile
 
 # Node modules (if frontend included)
 node_modules/
