@@ -1,39 +1,60 @@
-# Docker
-# Build and push an image to Azure Container Registry
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
 trigger:
-- main
-
-resources:
-- repo: self
+  - main
 
 variables:
-  # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '22c92e79-70f6-4949-b79e-59faa8d78863'
-  imageRepository: 'apispringbootapp'
-  containerRegistry: 'acr4api.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/backend/Dockerfile'
-  tag: '$(Build.BuildId)'
-
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+  acrName: 'api4acr'
+  acrLoginServer: 'api4acr.azurecr.io'
+  resourceGroup: 'apirg'
+  appImageName: 'apispringbootapp'
+  appImageTag: 'v1'
 
 stages:
-- stage: Build
-  displayName: Build and push stage
+- stage: BuildPush
   jobs:
-  - job: Build
-    displayName: Build
+  - job: DockerBuildPush
     pool:
-      vmImage: $(vmImageName)
+      vmImage: ubuntu-latest
     steps:
     - task: Docker@2
-      displayName: Build and push an image to container registry
       inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
+        containerRegistry: 'scn4api'
+        repository: '$(appImageName)'
+        command: 'buildAndPush'
+        Dockerfile: 'backend/Dockerfile'
         tags: |
-          $(tag)
+          $(appImageTag)
+
+- stage: DeployACI
+  jobs:
+  - job: Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'arm4api'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az container create \
+            --resource-group $(resourceGroup) \
+            --name mysql-container \
+            --image mysql:8.0 \
+            --environment-variables MYSQL_ROOT_PASSWORD=root MYSQL_DATABASE=userdb \
+            --ports 3306 \
+            --dns-name-label mysql4api --location eastus \
+            --restart-policy OnFailure
+
+          sleep 40  # wait for DB to be ready
+
+          az container create \
+            --resource-group $(resourceGroup) \
+            --name springboot-api \
+            --image $(acrLoginServer)/$(appImageName):$(appImageTag) \
+            --dns-name-label springboot4api \
+            --ports 8080 \
+            --environment-variables SPRING_DATASOURCE_URL=jdbc:mysql://mysql4api.eastus.azurecontainer.io:3306/userdb SPRING_DATASOURCE_USERNAME=root SPRING_DATASOURCE_PASSWORD=root \
+            --registry-login-server $(acrLoginServer) \
+            --registry-username $(ACR_USERNAME) \
+            --registry-password $(ACR_PASSWORD) \
+            --restart-policy OnFailure
