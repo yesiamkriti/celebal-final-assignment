@@ -2,11 +2,13 @@ trigger:
   - main
 
 variables:
-  acrName: 'api4acr'
-  acrLoginServer: 'api4acr.azurecr.io'
+  acrName: 'acr4api'
+  acrLoginServer: 'acr4api.azurecr.io'
   resourceGroup: 'apirg'
   appImageName: 'apispringbootapp'
   appImageTag: 'v1'
+  mysqlImageName: 'mysql'
+  mysqlImageTag: '8.0'
 
 stages:
 - stage: BuildPush
@@ -32,21 +34,24 @@ stages:
     steps:
     - task: AzureCLI@2
       inputs:
-        azureSubscription: 'arm4api'  # Azure Resource Manager service connection
+        azureSubscription: 'arm4api'  # Azure Resource Manager connection
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          echo "Deploying MySQL container..."
+          echo "Deploying MySQL container from ACR..."
           az container create \
             --resource-group $(resourceGroup) \
             --name mysql-container \
-            --image mysql:8.0 \
-            --environment-variables MYSQL_ROOT_PASSWORD=root MYSQL_DATABASE=userdb \
+            --image $(acrLoginServer)/$(mysqlImageName):$(mysqlImageTag) \
             --dns-name-label mysql4api \
             --ports 3306 \
             --os-type Linux \
             --cpu 1 \
             --memory 1.5 \
+            --environment-variables MYSQL_ROOT_PASSWORD=root MYSQL_DATABASE=userdb \
+            --registry-login-server $(acrLoginServer) \
+            --registry-username $(ACR_USERNAME) \
+            --registry-password $(ACR_PASSWORD) \
             --restart-policy OnFailure \
             --location eastus
 
