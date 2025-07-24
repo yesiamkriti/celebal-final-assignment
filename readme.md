@@ -4,6 +4,7 @@
 
 This project demonstrates how to develop and deploy a Java Spring Boot CRUD web application using Azure Container Instances (ACI) and automate the CI/CD pipeline using Azure DevOps.
 [Watch the demo video](https://github.com/yesiamkriti/celebal-final-assignment/blob/main/frontend/Untitled%20video%20-%20Made%20with%20Clipchamp.mp4)
+<video src="https://github.com/yesiamkriti/celebal-final-assignment/blob/main/frontend/Untitled%20video%20-%20Made%20with%20Clipchamp.mp4" width="600" controls></video>
 
 ---
 
